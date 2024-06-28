@@ -15,7 +15,7 @@ def color_specific_cell(row, target_column):
     return [color if col == target_column else '' for col in row.index]
 
 
-df_sex_styled = df.style.apply(color_specific_cell, axis=1, target_column='Sex' )
+# df_sex_styled = df.style.apply(color_specific_cell, axis=1, target_column='Sex' )
 
 
 #--------------------------------------------------------------
@@ -41,8 +41,17 @@ st.markdown("""
 
 col1, col2, col3 = st.columns([1,2,1])
 
+with col3: 
+    selected_feature = st.radio("Select feature to split on:", ["None","Sex","BP" ],horizontal=True)
+
+
 with col2:
-    st.dataframe(df_sex_styled)
+    if selected_feature == "Sex":
+        df_styled = df.style.apply(color_specific_cell, axis=1, target_column='Sex')
+    else:
+        df_styled = df
+
+    st.dataframe(df_styled)
     st.write(f'Data samples : {len(df)}')
     st.write(dict(df['Drug'].value_counts()))
 
@@ -53,9 +62,7 @@ with col2:
 
 st.write('-----------')
 
-#------------------------------------------------------
-# # block one 
-selected_feature = st.radio("Select feature to split on:", ["Sex", "None"],horizontal=True)
+#------------------------------------------------------ # # block one 
 
 if selected_feature == "Sex":
     st.markdown("<h1 style='text-align: center;'>is it F ?</h1>", unsafe_allow_html=True)
@@ -115,3 +122,63 @@ if selected_feature == "Sex":
 
         gini_impurity_sex = ((len(female_true)/len(df))*gini_impurity_female_true) + ((len(female_false)/len(df))*gini_impurity_female_false)
         st.latex(f'Gini\ impurity\ Sex = {gini_impurity_sex:.3f}') 
+
+#------------------------------------------------------------------------- End of block one 
+if selected_feature == "BP":
+
+
+    BP_high = df[['BP','Drug']][df['BP']=='HIGH']
+    BP_not_high = df[['BP','Drug']][df['BP']!='HIGH']
+
+    BP_normal = df[df['BP']=='NORMAL']
+    BP_not_normal = df[df['BP']!='NORMAL']
+
+    BP_low = df[df['BP']=='LOW']
+    BP_not_low = df[df['BP']!='LOW']
+    
+
+
+
+    col1, col2 , col3, col4,= st.columns([1,1,1,1])
+
+
+    with col1:
+        st.write('High split')
+        st.dataframe(BP_high)
+        st.write(f'Data samples : {len(BP_high)}')
+        st.write(dict(BP_high['Drug'].value_counts()))
+        h_t_b_d = list(BP_high['Drug'].value_counts()) # high true binning drug
+        gini_impurity_BP_high = helper_function.gini_impurity(BP_high['Drug'].value_counts().values)
+        # st.latex(f'G\ I\ BP\ HIGH = {gini_impurity_BP_high:.3f}')
+        st.write(f'Gini Impurity BP HIGH = {gini_impurity_BP_high:.3f}')
+        
+
+
+    with col2:
+        st.write('not High split')
+        st.dataframe(BP_not_high)
+        st.write(f'Data samples : {len(BP_not_high)}')
+        st.write(dict(BP_not_high['Drug'].value_counts()))
+        h_t_b_d = list(BP_not_high['Drug'].value_counts()) # high true binning drug
+        gini_impurity_BP_not_high = helper_function.gini_impurity(BP_not_high['Drug'].value_counts().values)
+        st.write(f'Gini Impurity BP HIGH = {gini_impurity_BP_high:.3f}')
+
+
+
+
+    # st.write('--------------------------------')
+
+    # col1, col2, col3 = st.columns([1,2,1])
+    # with col2:
+    #     latex_formula = r'''
+    #     \text{Gini impurity Sex} = 
+    #     (\frac{%d}{%d} \cdot %.3f) + 
+    #     (\frac{%d}{%d} \cdot %.3f)
+    #     ''' % (len(female_true), len(df), gini_impurity_female_true,
+    #         len(female_false), len(df), gini_impurity_female_false)
+
+    #     # Display the LaTeX formula
+    #     st.latex(latex_formula)
+
+    #     gini_impurity_sex = ((len(female_true)/len(df))*gini_impurity_female_true) + ((len(female_false)/len(df))*gini_impurity_female_false)
+    #     st.latex(f'Gini\ impurity\ Sex = {gini_impurity_sex:.3f}') 
